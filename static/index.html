@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Results Mirror™ | Realty ONE Group Results</title>
+<meta name="description" content="It's not what you're saying. It's what they're hearing. AI communication coaching for real estate agents.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black: #1a1a1a;
+  --gold: #C8A951;
+  --gold-light: #f5edda;
+  --gold-dark: #a68b3e;
+  --gold-dim: rgba(200,169,81,0.10);
+  --white: #ffffff;
+  --off-white: #FAFAF8;
+  --bg: #FAFAF8;
+  --charcoal: #2d2d2d;
+  --text: #333333;
+  --text-muted: #6b6b6b;
+  --border: #e5e2db;
+  --border-light: #f0eeea;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.1);
+  --shadow-gold: 0 4px 20px rgba(200,169,81,0.15);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --transition: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  --font-display: 'Bebas Neue', Impact, sans-serif;
+  --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  font-size: 16px;
+  min-height: 100vh;
+}
+
+/* HEADER */
+.site-header {
+  background: var(--black);
+  padding: 18px 20px;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.site-header h1 {
+  font-family: var(--font-display);
+  font-size: clamp(20px, 3.5vw, 28px);
+  color: var(--gold);
+  letter-spacing: 3px;
+  line-height: 1;
+}
+.site-header p {
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+/* MAIN */
+.main-container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 16px 80px;
+}
+
+/* SCREENS */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* LANDING */
+.landing-hero {
+  text-align: center;
+  padding: 48px 0 32px;
+}
+.landing-hero .tagline {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 5vw, 42px);
+  color: var(--black);
+  letter-spacing: 1.5px;
+  line-height: 1.1;
+  margin-bottom: 12px;
+}
+.landing-hero .tagline em {
+  color: var(--gold);
+  font-style: normal;
+}
+.landing-hero .subtitle {
+  font-size: 15px;
+  color: var(--text-muted);
+  max-width: 480px;
+  margin: 0 auto 32px;
+  line-height: 1.6;
+}
+
+/* NAME INPUT */
+.name-input-section {
+  text-align: center;
+  margin-bottom: 32px;
+}
+.name-input-section label {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  display: block;
+  margin-bottom: 6px;
+}
+.name-input-section input {
+  font-family: var(--font-body);
+  font-size: 16px;
+  padding: 12px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  width: 100%;
+  max-width: 280px;
+  text-align: center;
+  background: var(--white);
+  transition: border-color var(--transition);
+}
+.name-input-section input:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+
+/* DOOR CARDS */
+.doors-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 480px) {
+  .doors-grid { grid-template-columns: 1fr; }
+}
+
+.door-card {
+  background: var(--white);
+  border: 1.5px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 24px 20px;
+  cursor: pointer;
+  transition: all var(--transition);
+  text-align: left;
+}
+.door-card:hover {
+  border-color: var(--gold);
+  box-shadow: var(--shadow-gold);
+  transform: translateY(-2px);
+}
+.door-card .door-icon {
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+.door-card .door-title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  color: var(--black);
+  letter-spacing: 0.8px;
+  margin-bottom: 6px;
+  line-height: 1.2;
+}
+.door-card .door-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.door-card.featured {
+  border-color: var(--gold);
+  background: linear-gradient(135deg, var(--white) 0%, var(--gold-light) 100%);
+}
+
+/* SETUP SCREENS (client profile, scenario) */
+.setup-section {
+  padding: 24px 0;
+}
+.setup-section h2 {
+  font-family: var(--font-display);
+  font-size: clamp(22px, 4vw, 30px);
+  color: var(--black);
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+.setup-section .setup-subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+.form-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: block;
+  margin-bottom: 6px;
+}
+.form-group .hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.form-group select,
+.form-group input,
+.form-group textarea {
+  font-family: var(--font-body);
+  font-size: 15px;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  width: 100%;
+  background: var(--white);
+  transition: border-color var(--transition);
+}
+.form-group select:focus,
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.option-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+@media (max-width: 400px) {
+  .option-grid { grid-template-columns: 1fr; }
+}
+.option-btn {
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  transition: all var(--transition);
+  text-align: left;
+}
+.option-btn:hover { border-color: var(--gold); }
+.option-btn.selected {
+  border-color: var(--gold);
+  background: var(--gold-light);
+  font-weight: 600;
+}
+
+/* BUTTONS */
+.btn-primary {
+  font-family: var(--font-display);
+  font-size: 16px;
+  letter-spacing: 2px;
+  padding: 14px 32px;
+  background: var(--black);
+  color: var(--gold);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition);
+  width: 100%;
+}
+.btn-primary:hover {
+  background: var(--charcoal);
+  box-shadow: var(--shadow-md);
+}
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-back {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 0;
+  margin-bottom: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.btn-back:hover { color: var(--gold-dark); }
+
+/* CHAT */
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 160px);
+  max-height: 700px;
+}
+.chat-header {
+  padding: 16px 0 12px;
+  border-bottom: 1px solid var(--border-light);
+  margin-bottom: 12px;
+}
+.chat-header h3 {
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--black);
+  letter-spacing: 1px;
+}
+.chat-header .chat-context {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+  scroll-behavior: smooth;
+}
+
+.message {
+  margin-bottom: 16px;
+  max-width: 88%;
+  animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.message.client {
+  margin-left: auto;
+}
+.message.client .message-bubble {
+  background: var(--black);
+  color: var(--white);
+  border-radius: var(--radius-md) var(--radius-md) 4px var(--radius-md);
+  padding: 12px 16px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.message.agent {
+  margin-right: auto;
+}
+.message.agent .message-bubble {
+  background: var(--white);
+  color: var(--text);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md) var(--radius-md) var(--radius-md) 4px;
+  padding: 12px 16px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.message .message-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+.message.client .message-label { text-align: right; }
+
+/* Mirror analysis styling */
+.message.analysis .message-bubble {
+  background: linear-gradient(135deg, var(--black) 0%, var(--charcoal) 100%);
+  color: var(--white);
+  border: 1px solid rgba(200,169,81,0.3);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+.message.analysis .message-bubble h3 {
+  font-family: var(--font-display);
+  font-size: 16px;
+  color: var(--gold);
+  letter-spacing: 1px;
+  margin: 16px 0 8px;
+}
+.message.analysis .message-bubble h3:first-child { margin-top: 0; }
+.message.analysis .message-bubble p {
+  color: rgba(255,255,255,0.85);
+  margin-bottom: 8px;
+}
+.message.analysis { max-width: 100%; }
+
+/* AI response formatting */
+.message.agent .message-bubble h3,
+.message.agent .message-bubble h4 {
+  font-family: var(--font-display);
+  font-size: 15px;
+  color: var(--black);
+  letter-spacing: 0.5px;
+  margin: 14px 0 6px;
+}
+.message.agent .message-bubble h3:first-child { margin-top: 0; }
+.message.agent .message-bubble ul,
+.message.agent .message-bubble ol {
+  padding-left: 18px;
+  margin: 6px 0;
+}
+.message.agent .message-bubble li {
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+.message.agent .message-bubble strong {
+  color: var(--black);
+}
+
+.chat-input-area {
+  border-top: 1px solid var(--border-light);
+  padding: 12px 0 0;
+  display: flex;
+  gap: 8px;
+}
+.chat-input-area textarea {
+  flex: 1;
+  font-family: var(--font-body);
+  font-size: 15px;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  resize: none;
+  min-height: 44px;
+  max-height: 120px;
+  background: var(--white);
+  line-height: 1.4;
+}
+.chat-input-area textarea:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+.chat-input-area button {
+  font-family: var(--font-display);
+  font-size: 14px;
+  letter-spacing: 1px;
+  padding: 0 20px;
+  background: var(--black);
+  color: var(--gold);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--transition);
+}
+.chat-input-area button:hover { background: var(--charcoal); }
+.chat-input-area button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* TYPING INDICATOR */
+.typing-indicator {
+  display: inline-flex;
+  gap: 4px;
+  padding: 8px 12px;
+}
+.typing-indicator span {
+  width: 6px;
+  height: 6px;
+  background: var(--gold);
+  border-radius: 50%;
+  animation: bounce 1.2s infinite;
+}
+.typing-indicator span:nth-child(2) { animation-delay: 0.15s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes bounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-6px); }
+}
+
+/* FOOTER */
+.site-footer {
+  text-align: center;
+  padding: 24px 20px;
+  font-size: 11px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+}
+
+/* SCROLLBAR */
+.chat-messages::-webkit-scrollbar { width: 4px; }
+.chat-messages::-webkit-scrollbar-track { background: transparent; }
+.chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <h1>RESULTS MIRROR</h1>
+  <p>Realty ONE Group Results</p>
+</header>
+
+<main class="main-container">
+
+  <!-- ========== LANDING ========== -->
+  <div id="screenLanding" class="screen active">
+    <div class="landing-hero">
+      <div class="tagline">IT'S NOT WHAT YOU'RE <em>SAYING.</em><br>IT'S WHAT THEY'RE <em>HEARING.</em></div>
+      <p class="subtitle">AI-powered communication coaching that shows you the gap between your intent and their perception — and teaches you how to close it.</p>
+    </div>
+
+    <div class="name-input-section">
+      <label>Your First Name</label>
+      <input type="text" id="agentNameInput" placeholder="e.g. Sarah" autocomplete="given-name">
+    </div>
+
+    <div class="doors-grid">
+      <div class="door-card featured" onclick="openDoor('mirror')">
+        <div class="door-icon">🪞</div>
+        <div class="door-title">WHAT I SAY VS. WHAT THEY HEAR</div>
+        <div class="door-desc">Practice real conversations. See what clients actually experience when you talk. The gut-punch that changes everything.</div>
+      </div>
+      <div class="door-card" onclick="openDoor('diagnostic')">
+        <div class="door-icon">🔍</div>
+        <div class="door-title">WHY AM I NOT WHERE I WANT TO BE?</div>
+        <div class="door-desc">Honest diagnostic. We'll figure out together what's really holding you back — not the surface stuff.</div>
+      </div>
+      <div class="door-card" onclick="openDoor('coaching')">
+        <div class="door-icon">💬</div>
+        <div class="door-title">ONE-ON-ONE COACHING</div>
+        <div class="door-desc">Bring whatever you're working through. An upcoming appointment, a client you can't read, a deal that's stalling.</div>
+      </div>
+      <div class="door-card" onclick="openDoor('postmortem')">
+        <div class="door-icon">🔄</div>
+        <div class="door-title">WHAT DID I GET WRONG?</div>
+        <div class="door-desc">Lost a deal? Blew a conversation? Walk me through it from the beginning and we'll find what really happened.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== MIRROR SETUP ========== -->
+  <div id="screenMirrorSetup" class="screen">
+    <button class="btn-back" onclick="showScreen('screenLanding')">← Back</button>
+    <div class="setup-section">
+      <h2>SET UP THE MIRROR</h2>
+      <p class="setup-subtitle">Tell me about the client you're about to practice with. The more I know about them, the more realistic — and useful — this will be.</p>
+
+      <div class="form-group">
+        <label>Client Personality Type</label>
+        <div class="hint">How does this client naturally communicate?</div>
+        <div class="option-grid" id="personalityGrid">
+          <button class="option-btn" data-value="High D" onclick="selectOption(this, 'personalityGrid')">
+            <strong>D — Direct</strong><br>Bottom-line, data-driven, impatient with fluff
+          </button>
+          <button class="option-btn" data-value="High I" onclick="selectOption(this, 'personalityGrid')">
+            <strong>I — Influencer</strong><br>Enthusiastic, social, wants to feel excited
+          </button>
+          <button class="option-btn" data-value="High S" onclick="selectOption(this, 'personalityGrid')">
+            <strong>S — Steady</strong><br>Warm, cautious, needs reassurance and time
+          </button>
+          <button class="option-btn" data-value="High C" onclick="selectOption(this, 'personalityGrid')">
+            <strong>C — Analytical</strong><br>Detail-oriented, wants process and proof
+          </button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>How Are They Feeling?</label>
+        <div class="option-grid" id="emotionalGrid">
+          <button class="option-btn" data-value="Skeptical and distrusting" onclick="selectOption(this, 'emotionalGrid')">Skeptical</button>
+          <button class="option-btn" data-value="Nervous and anxious" onclick="selectOption(this, 'emotionalGrid')">Nervous</button>
+          <button class="option-btn" data-value="Excited but unsure" onclick="selectOption(this, 'emotionalGrid')">Excited</button>
+          <button class="option-btn" data-value="Frustrated — had a bad experience" onclick="selectOption(this, 'emotionalGrid')">Frustrated</button>
+          <button class="option-btn" data-value="Confident and decisive" onclick="selectOption(this, 'emotionalGrid')">Confident</button>
+          <button class="option-btn" data-value="Overwhelmed and confused" onclick="selectOption(this, 'emotionalGrid')">Overwhelmed</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Scenario</label>
+        <select id="scenarioSelect">
+          <option value="">Choose a scenario...</option>
+          <option value="First buyer meeting — need to explain your value and get a Buyer Broker Agreement signed">Buyer Consultation / BBA</option>
+          <option value="Listing appointment — convincing a seller to hire you and price correctly">Listing Appointment</option>
+          <option value="Price reduction conversation — the listing isn't getting showings and needs a price adjustment">Price Reduction Talk</option>
+          <option value="Cold call to an expired listing — their home didn't sell with the last agent">Expired Listing Call</option>
+          <option value="Cold call to a For Sale By Owner — they're trying to sell without an agent">FSBO Call</option>
+          <option value="Buyer objection — the buyer is pushing back on your commission or the BBA terms">Buyer Objection</option>
+          <option value="Negotiation — you're presenting or countering an offer and need to advocate for your client">Offer Negotiation</option>
+          <option value="Open house follow-up — you met this person at an open house and are following up">Open House Follow-Up</option>
+          <option value="Sphere of influence reach-out — reconnecting with someone you haven't talked to in months">SOI Reconnection</option>
+          <option value="custom">Custom scenario...</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="customScenarioGroup" style="display:none;">
+        <label>Describe Your Scenario</label>
+        <textarea id="customScenario" placeholder="Describe the situation..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Anything Else I Should Know?</label>
+        <div class="hint">Client background, special circumstances, what you've tried before (optional)</div>
+        <textarea id="clientBackground" placeholder="e.g. First-time buyer, relocating from New York, engineer, very data-driven..." rows="2"></textarea>
+      </div>
+
+      <button class="btn-primary" onclick="startMirror()">START THE MIRROR →</button>
+    </div>
+  </div>
+
+  <!-- ========== CHAT SCREEN ========== -->
+  <div id="screenChat" class="screen">
+    <button class="btn-back" onclick="exitChat()">← Back to Menu</button>
+    <div class="chat-container">
+      <div class="chat-header">
+        <h3 id="chatTitle">THE MIRROR</h3>
+        <div class="chat-context" id="chatContext"></div>
+      </div>
+      <div class="chat-messages" id="chatMessages"></div>
+      <div class="chat-input-area">
+        <textarea id="chatInput" placeholder="Type your response..." rows="1" onkeydown="handleKeyDown(event)"></textarea>
+        <button id="sendBtn" onclick="sendMessage()">SEND</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site-footer">
+  Results Mirror™ — Built by Teresa Overcash, Broker-in-Charge<br>
+  Realty ONE Group Results
+</footer>
+
+<script>
+// ===== CONFIG =====
+const API = window.location.origin;
+let currentDoor = '';
+let currentMessages = [];
+let agentName = '';
+let clientProfile = {};
+let isStreaming = false;
+
+// ===== NAVIGATION =====
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function openDoor(door) {
+  agentName = document.getElementById('agentNameInput').value.trim();
+  if (!agentName) {
+    document.getElementById('agentNameInput').focus();
+    document.getElementById('agentNameInput').style.borderColor = '#C62828';
+    setTimeout(() => document.getElementById('agentNameInput').style.borderColor = '', 1500);
+    return;
+  }
+  currentDoor = door;
+  currentMessages = [];
+
+  if (door === 'mirror') {
+    showScreen('screenMirrorSetup');
+  } else {
+    // Doors 1, 2, 3 go straight to chat
+    let title, context, firstMessage;
+    if (door === 'diagnostic') {
+      title = "WHY AM I NOT WHERE I WANT TO BE?";
+      context = "Diagnostic session";
+      firstMessage = `Hey ${agentName}. I'm glad you're here — it takes guts to ask this question. Let's figure this out together, no judgment.\n\nBefore we dig in, tell me — how long have you been in real estate?`;
+    } else if (door === 'coaching') {
+      title = "ONE-ON-ONE COACHING";
+      context = "Open coaching session";
+      firstMessage = `Hey ${agentName}. What's on your mind? Tell me what you're working through — whether it's a deal, a client, a confidence thing, or something else entirely. I'm listening.`;
+    } else if (door === 'postmortem') {
+      title = "WHAT DID I GET WRONG?";
+      context = "Post-mortem diagnosis";
+      firstMessage = `Alright ${agentName}, let's look at this together. Before you tell me what went wrong — I want you to start at the very beginning. Not where it blew up, but where it started. Walk me through it from the first moment.`;
+    }
+
+    document.getElementById('chatTitle').textContent = title;
+    document.getElementById('chatContext').textContent = context;
+    showScreen('screenChat');
+    document.getElementById('chatMessages').innerHTML = '';
+
+    // Add AI's opening message
+    currentMessages.push({ role: 'assistant', content: firstMessage });
+    addMessageToUI('agent', firstMessage);
+    document.getElementById('chatInput').focus();
+  }
+}
+
+function exitChat() {
+  currentMessages = [];
+  currentDoor = '';
+  showScreen('screenLanding');
+}
+
+// ===== MIRROR SETUP =====
+function selectOption(btn, gridId) {
+  document.querySelectorAll(`#${gridId} .option-btn`).forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+document.getElementById('scenarioSelect').addEventListener('change', function() {
+  document.getElementById('customScenarioGroup').style.display = this.value === 'custom' ? 'block' : 'none';
+});
+
+function startMirror() {
+  const personality = document.querySelector('#personalityGrid .selected')?.dataset.value;
+  const emotional = document.querySelector('#emotionalGrid .selected')?.dataset.value;
+  const scenarioEl = document.getElementById('scenarioSelect');
+  let scenario = scenarioEl.value === 'custom' ? document.getElementById('customScenario').value.trim() : scenarioEl.value;
+  const background = document.getElementById('clientBackground').value.trim();
+
+  if (!personality) { alert('Please select a personality type.'); return; }
+  if (!emotional) { alert('Please select an emotional state.'); return; }
+  if (!scenario) { alert('Please choose a scenario.'); return; }
+
+  clientProfile = { personality, emotional, situation: scenario, background };
+
+  const contextStr = `${personality} · ${emotional} · ${scenario.split(' — ')[0]}`;
+  document.getElementById('chatTitle').textContent = "THE MIRROR";
+  document.getElementById('chatContext').textContent = contextStr;
+  showScreen('screenChat');
+  document.getElementById('chatMessages').innerHTML = '';
+
+  // Client's opening line (AI as client)
+  const openingPrompt = `You are the client in this scenario. The agent (${agentName}) is about to meet with you. Start the conversation as this client would — introduce yourself or say what's on your mind based on your personality and emotional state. Keep it to 1-3 sentences, realistic and in character. The scenario is: ${scenario}`;
+
+  currentMessages = [{ role: 'user', content: openingPrompt }];
+  streamResponse();
+}
+
+// ===== CHAT FUNCTIONS =====
+function addMessageToUI(type, content, isAnalysis) {
+  const messagesEl = document.getElementById('chatMessages');
+  const msgDiv = document.createElement('div');
+  msgDiv.className = `message ${type}${isAnalysis ? ' analysis' : ''}`;
+
+  let label = '';
+  if (type === 'client' && currentDoor === 'mirror') label = 'CLIENT (AI)';
+  else if (type === 'agent') {
+    label = currentDoor === 'mirror' ? 'CLIENT (AI)' : 'TERESA';
+  }
+  else label = `YOU (${agentName.toUpperCase()})`;
+
+  // Format markdown-like content
+  let formatted = content
+    .replace(/### (.*?)(\n|$)/g, '<h3>$1</h3>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n- /g, '\n• ')
+    .replace(/\n/g, '<br>');
+
+  msgDiv.innerHTML = `
+    <div class="message-label">${label}</div>
+    <div class="message-bubble">${formatted}</div>
+  `;
+  messagesEl.appendChild(msgDiv);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+  return msgDiv;
+}
+
+function addTypingIndicator() {
+  const messagesEl = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'message agent';
+  div.id = 'typingIndicator';
+  const label = currentDoor === 'mirror' ? 'CLIENT (AI)' : 'TERESA';
+  div.innerHTML = `
+    <div class="message-label">${label}</div>
+    <div class="message-bubble"><div class="typing-indicator"><span></span><span></span><span></span></div></div>
+  `;
+  messagesEl.appendChild(div);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function removeTypingIndicator() {
+  document.getElementById('typingIndicator')?.remove();
+}
+
+function handleKeyDown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function autoResizeTextarea() {
+  const ta = document.getElementById('chatInput');
+  ta.style.height = 'auto';
+  ta.style.height = Math.min(ta.scrollHeight, 120) + 'px';
+}
+document.getElementById('chatInput')?.addEventListener('input', autoResizeTextarea);
+
+function sendMessage() {
+  if (isStreaming) return;
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+
+  input.value = '';
+  autoResizeTextarea();
+
+  // Add user message to UI
+  addMessageToUI('client', text);
+
+  // Add to messages array
+  if (currentDoor === 'mirror') {
+    // In mirror mode, user messages are the "agent" responding to the "client"
+    currentMessages.push({ role: 'user', content: text });
+  } else {
+    currentMessages.push({ role: 'user', content: text });
+  }
+
+  streamResponse();
+}
+
+async function streamResponse() {
+  isStreaming = true;
+  document.getElementById('sendBtn').disabled = true;
+  addTypingIndicator();
+
+  try {
+    const response = await fetch(`${API}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        door: currentDoor,
+        messages: currentMessages,
+        clientProfile: clientProfile,
+        agentName: agentName
+      })
+    });
+
+    removeTypingIndicator();
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let fullText = '';
+    let isAnalysis = false;
+
+    // Create message element for streaming
+    const msgDiv = addMessageToUI('agent', '', false);
+    const bubble = msgDiv.querySelector('.message-bubble');
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value, { stream: true });
+      const lines = chunk.split('\n');
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          try {
+            const data = JSON.parse(line.slice(6));
+            if (data.text) {
+              fullText += data.text;
+
+              // Check for analysis marker
+              if (fullText.includes('[MIRROR_ANALYSIS_READY]')) {
+                isAnalysis = true;
+                msgDiv.classList.add('analysis');
+                fullText = fullText.replace('[MIRROR_ANALYSIS_READY]', '');
+              }
+
+              // Render formatted text
+              let formatted = fullText
+                .replace(/### (.*?)(\n|$)/g, '<h3>$1</h3>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n- /g, '\n• ')
+                .replace(/\n/g, '<br>');
+              bubble.innerHTML = formatted;
+
+              // Auto-scroll
+              const messagesEl = document.getElementById('chatMessages');
+              messagesEl.scrollTop = messagesEl.scrollHeight;
+            }
+          } catch (e) {}
+        }
+      }
+    }
+
+    // Add to message history
+    currentMessages.push({ role: 'assistant', content: fullText });
+
+  } catch (error) {
+    removeTypingIndicator();
+    addMessageToUI('agent', "I'm having trouble connecting right now. Please try again in a moment.");
+    console.error('Stream error:', error);
+  }
+
+  isStreaming = false;
+  document.getElementById('sendBtn').disabled = false;
+  document.getElementById('chatInput').focus();
+}
+</script>
+
+</body>
+</html>
