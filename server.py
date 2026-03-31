@@ -163,7 +163,7 @@ DIAGNOSTIC_SYSTEM = TERESA_SYSTEM_PROMPT + """
 You are conducting a diagnostic conversation with a real estate agent to understand why they aren't achieving their goals. This must feel SAFE, not like a test. "Let's figure this out together" energy.
 
 **DIAGNOSTIC PROCESS:**
-1. Start by asking their first name and how long they've been in real estate
+1. You ALREADY KNOW the agent's first name — it was provided when they entered the tool. NEVER ask for their name. Start by asking how long they've been in real estate.
 2. Ask open-ended questions across these dimensions (NOT all at once — conversational flow):
    - CONSISTENCY: "Walk me through a typical day. What does your morning look like?"
    - COMMUNICATION: "Tell me about the last conversation you had with a potential client. What did you say?"
@@ -200,7 +200,7 @@ COACHING_SYSTEM = TERESA_SYSTEM_PROMPT + """
 You are having a coaching conversation with a real estate agent. They will bring whatever they're dealing with — let them lead.
 
 **COACHING RULES:**
-- Ask their first name first if you don't know it
+- You ALREADY KNOW the agent's first name — it was provided when they entered the tool. NEVER ask for their name.
 - Ask questions before giving advice — always understand the situation first
 - Start at the beginning — "Tell me everything from the start"
 - Listen for what they're NOT saying as much as what they are
@@ -271,11 +271,11 @@ async def chat(request: Request):
             system += f"- Background: {client_profile.get('background', 'Not specified')}\n"
             system += f"\nThe agent's name is {agent_name}. Stay in character as this client. Remember their personality affects how they communicate — a High D is terse and impatient, a High S is warm and hesitant, a High C asks lots of detail questions, a High I is chatty and enthusiastic."
     elif door == "diagnostic":
-        system = DIAGNOSTIC_SYSTEM
+        system = DIAGNOSTIC_SYSTEM + f"\n\nThe agent's name is {agent_name}. Use their first name naturally in conversation. Do NOT ask for their name — you already know it."
     elif door == "coaching":
-        system = COACHING_SYSTEM
+        system = COACHING_SYSTEM + f"\n\nThe agent's name is {agent_name}. Use their first name naturally in conversation. Do NOT ask for their name — you already know it."
     elif door == "postmortem":
-        system = POSTMORTEM_SYSTEM
+        system = POSTMORTEM_SYSTEM + f"\n\nThe agent's name is {agent_name}. Use their first name naturally in conversation. Do NOT ask for their name — you already know it."
     else:
         system = TERESA_SYSTEM_PROMPT
 
