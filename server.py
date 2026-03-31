@@ -16,8 +16,12 @@ from anthropic import Anthropic
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
+# On Render: uses ANTHROPIC_API_KEY env var directly
+# In sandbox: uses proxy credentials
 client = Anthropic()
-MODEL = "claude_sonnet_4_6"
+
+# Use standard model name for Render deployment
+MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-20250514")
 
 # In-memory session storage (per visitor)
 sessions = {}
