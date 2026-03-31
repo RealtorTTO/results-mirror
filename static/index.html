@@ -465,6 +465,43 @@ body {
 .chat-input-area button:hover { background: var(--charcoal); }
 .chat-input-area button:disabled { opacity: 0.4; cursor: not-allowed; }
 
+/* MIC BUTTON */
+.mic-btn {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: var(--white);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+  font-size: 18px;
+  padding: 0;
+}
+.mic-btn:hover { border-color: var(--gold); }
+.mic-btn.recording {
+  background: #C62828;
+  border-color: #C62828;
+  animation: pulse-mic 1.2s infinite;
+}
+.mic-btn.recording svg path { fill: white; }
+@keyframes pulse-mic {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(198,40,40,0.3); }
+  50% { box-shadow: 0 0 0 8px rgba(198,40,40,0); }
+}
+
+.speech-hint {
+  text-align: center;
+  padding: 8px 0 4px;
+  font-size: 12px;
+  color: var(--gold-dark);
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
 /* INTRO BLURB */
 .intro-blurb {
   text-align: center;
@@ -642,8 +679,12 @@ body {
         <div class="chat-context" id="chatContext"></div>
       </div>
       <div class="chat-messages" id="chatMessages"></div>
+      <div class="speech-hint" id="speechHint">🎙 Speaking gives better results — talk like you would to a real client</div>
       <div class="chat-input-area">
-        <textarea id="chatInput" placeholder="Type your response..." rows="1" onkeydown="handleKeyDown(event)"></textarea>
+        <button class="mic-btn" id="micBtn" onclick="toggleMic()" title="Tap to speak">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </button>
+        <textarea id="chatInput" placeholder="Tap the mic to speak, or type here..." rows="1" onkeydown="handleKeyDown(event)"></textarea>
         <button id="sendBtn" onclick="sendMessage()">SEND</button>
       </div>
     </div>
@@ -834,14 +875,106 @@ function autoResizeTextarea() {
 }
 document.getElementById('chatInput')?.addEventListener('input', autoResizeTextarea);
 
+// ===== SPEECH RECOGNITION =====
+let recognition = null;
+let isRecording = false;
+let finalTranscript = '';
+
+function initSpeechRecognition() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    // Browser doesn't support speech — hide mic button
+    document.getElementById('micBtn').style.display = 'none';
+    document.getElementById('speechHint').style.display = 'none';
+    document.getElementById('chatInput').placeholder = 'Type your response — be detailed...';
+    return;
+  }
+
+  recognition = new SpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = 'en-US';
+
+  recognition.onresult = function(event) {
+    let interim = '';
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      if (event.results[i].isFinal) {
+        finalTranscript += event.results[i][0].transcript + ' ';
+      } else {
+        interim += event.results[i][0].transcript;
+      }
+    }
+    const input = document.getElementById('chatInput');
+    input.value = finalTranscript + interim;
+    autoResizeTextarea();
+  };
+
+  recognition.onerror = function(event) {
+    console.log('Speech error:', event.error);
+    stopRecording();
+  };
+
+  recognition.onend = function() {
+    if (isRecording) {
+      // Auto-restart if still in recording mode (handles browser timeouts)
+      try { recognition.start(); } catch(e) { stopRecording(); }
+    }
+  };
+}
+
+function toggleMic() {
+  if (isRecording) {
+    stopRecording();
+  } else {
+    startRecording();
+  }
+}
+
+function startRecording() {
+  if (!recognition) return;
+  const input = document.getElementById('chatInput');
+  // Keep existing text if any
+  isRecording = true;
+  document.getElementById('micBtn').classList.add('recording');
+  document.getElementById('speechHint').textContent = '\u{1F534} Listening... tap mic again when done';
+  document.getElementById('speechHint').style.color = '#C62828';
+  try {
+    recognition.start();
+  } catch(e) {
+    // Already started
+  }
+}
+
+function stopRecording() {
+  isRecording = false;
+  document.getElementById('micBtn').classList.remove('recording');
+  document.getElementById('speechHint').textContent = '\u{1F399} Speaking gives better results \u2014 talk like you would to a real client';
+  document.getElementById('speechHint').style.color = '';
+  if (recognition) {
+    try { recognition.stop(); } catch(e) {}
+  }
+}
+
+// Initialize on load
+initSpeechRecognition();
+
 function sendMessage() {
   if (isStreaming) return;
+  // Stop recording if active
+  if (isRecording) stopRecording();
+  
   const input = document.getElementById('chatInput');
   const text = input.value.trim();
   if (!text) return;
 
   input.value = '';
   autoResizeTextarea();
+  
+  // Reset speech transcript for next message
+  finalTranscript = '';
+  if (recognition) {
+    try { recognition.abort(); } catch(e) {}
+  }
 
   // Add user message to UI
   addMessageToUI('client', text);
