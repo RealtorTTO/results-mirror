@@ -632,8 +632,25 @@ body {
 
 <main class="main-container">
 
+  <!-- ========== PASSWORD GATE ========== -->
+  <div id="screenPassword" class="screen active">
+    <div class="landing-hero" style="padding-bottom:16px;">
+      <div class="tagline">RESULTS MIRROR</div>
+      <p class="subtitle">This tool is exclusively for Realty ONE Group Results agents.</p>
+    </div>
+    <div style="max-width:320px;margin:0 auto;text-align:center;">
+      <div class="form-group">
+        <label>Enter Password</label>
+        <input type="password" id="passwordInput" placeholder="Password" onkeydown="if(event.key==='Enter')checkPassword()" style="text-align:center;">
+      </div>
+      <div id="passwordError" style="color:#C62828;font-size:13px;margin-bottom:12px;display:none;">Incorrect password. Please try again.</div>
+      <button class="btn-primary" onclick="checkPassword()">ENTER</button>
+      <p style="font-size:12px;color:var(--text-muted);margin-top:16px;line-height:1.5;">Don't have the password? Ask your broker or check your Results Reset email.</p>
+    </div>
+  </div>
+
   <!-- ========== LANDING ========== -->
-  <div id="screenLanding" class="screen active">
+  <div id="screenLanding" class="screen">
     <div class="landing-hero">
       <div class="tagline">IT'S NOT WHAT YOU'RE <em>SAYING.</em><br>IT'S WHAT THEY'RE <em>HEARING.</em></div>
       <p class="subtitle">AI-powered communication coaching that shows you the gap between your intent and their perception — and teaches you how to close it.</p>
@@ -800,6 +817,26 @@ function selectStyle(btn) {
   document.querySelectorAll('#coachingStyleGrid .style-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
   coachingStyle = btn.dataset.value;
+}
+
+// ===== PASSWORD GATE =====
+function checkPassword() {
+  const input = document.getElementById('passwordInput');
+  const error = document.getElementById('passwordError');
+  if (input.value === 'MirrorMe2Results$') {
+    error.style.display = 'none';
+    showScreen('screenLanding');
+    sessionStorage.setItem('rm_auth', '1');
+  } else {
+    error.style.display = 'block';
+    input.value = '';
+    input.focus();
+  }
+}
+// Auto-pass if already authenticated this session
+if (sessionStorage.getItem('rm_auth') === '1') {
+  document.getElementById('screenPassword').classList.remove('active');
+  document.getElementById('screenLanding').classList.add('active');
 }
 
 // ===== NAVIGATION =====
