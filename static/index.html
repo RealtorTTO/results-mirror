@@ -137,6 +137,51 @@ body {
   border-color: var(--gold);
 }
 
+/* COACHING STYLE SELECTOR */
+.coaching-style-section {
+  margin-bottom: 28px;
+}
+.style-options {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+@media (max-width: 540px) {
+  .style-options { flex-direction: column; align-items: center; }
+}
+.style-btn {
+  flex: 1;
+  max-width: 200px;
+  padding: 14px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--white);
+  cursor: pointer;
+  transition: all var(--transition);
+  text-align: center;
+  font-family: var(--font-body);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.style-btn:hover { border-color: var(--gold); }
+.style-btn.selected {
+  border-color: var(--gold);
+  background: var(--gold-light);
+}
+.style-btn .style-icon { font-size: 20px; }
+.style-btn .style-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.style-btn .style-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
 /* DOOR CARDS */
 .doors-grid {
   display: grid;
@@ -576,6 +621,27 @@ body {
       <input type="text" id="agentNameInput" placeholder="e.g. Sarah" autocomplete="given-name">
     </div>
 
+    <div class="coaching-style-section">
+      <label style="font-size:13px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;display:block;text-align:center;margin-bottom:10px;">How Do You Want to Be Coached?</label>
+      <div class="style-options" id="coachingStyleGrid">
+        <button class="style-btn" data-value="gentle" onclick="selectStyle(this)">
+          <span class="style-icon">❤️</span>
+          <span class="style-label">Be gentle with me</span>
+          <span class="style-desc">Encouragement first, truth woven in softly</span>
+        </button>
+        <button class="style-btn selected" data-value="straight" onclick="selectStyle(this)">
+          <span class="style-icon">🎯</span>
+          <span class="style-label">Give it to me straight</span>
+          <span class="style-desc">Warm but direct — don't dance around it</span>
+        </button>
+        <button class="style-btn" data-value="brutal" onclick="selectStyle(this)">
+          <span class="style-icon">🔥</span>
+          <span class="style-label">Don't sugarcoat it</span>
+          <span class="style-desc">Full honesty, no filter, tell me what I need to hear</span>
+        </button>
+      </div>
+    </div>
+
     <div class="doors-grid">
       <div class="door-card featured" onclick="openDoor('mirror')">
         <div class="door-icon">🪞</div>
@@ -704,7 +770,14 @@ let currentDoor = '';
 let currentMessages = [];
 let agentName = '';
 let clientProfile = {};
+let coachingStyle = 'straight';
 let isStreaming = false;
+
+function selectStyle(btn) {
+  document.querySelectorAll('#coachingStyleGrid .style-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  coachingStyle = btn.dataset.value;
+}
 
 // ===== NAVIGATION =====
 function showScreen(id) {
@@ -1003,7 +1076,8 @@ async function streamResponse() {
         door: currentDoor,
         messages: currentMessages,
         clientProfile: clientProfile,
-        agentName: agentName
+        agentName: agentName,
+        coachingStyle: coachingStyle
       })
     });
 
