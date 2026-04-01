@@ -6,11 +6,12 @@ Backend server: FastAPI + Anthropic Claude
 import os
 import json
 import uuid
+import httpx
 from datetime import datetime
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse, Response
 from anthropic import Anthropic
 
 app = FastAPI()
@@ -356,6 +357,56 @@ Warm but direct. Boot camp with a hug. Lead with acknowledgment, then deliver th
         yield f"data: {json.dumps({'done': True})}\n\n"
 
     return StreamingResponse(generate(), media_type="text/event-stream")
+
+
+@app.post("/api/speak")
+async def speak(request: Request):
+    """Convert text to speech using Teresa's ElevenLabs voice clone."""
+    body = await request.json()
+    text = body.get("text", "")
+
+    if not text:
+        return Response(status_code=400, content="No text provided")
+
+    elevenlabs_key = os.environ.get("ELEVENLABS_API_KEY", "")
+    if not elevenlabs_key:
+        return Response(status_code=422, content="Voice not configured")
+
+    voice_id = "3IxA47k9QuVd6UhHhTA3"
+
+    # Strip markdown formatting for cleaner speech
+    clean_text = text.replace("### ", "").replace("**", "").replace("*", "").replace("#", "")
+    # Limit length to avoid huge audio files
+    if len(clean_text) > 3000:
+        clean_text = clean_text[:3000] + "... I have more to share, but lets pause here for now."
+
+    async with httpx.AsyncClient(timeout=60.0) as http:
+        resp = await http.post(
+            f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}",
+            headers={
+                "xi-api-key": elevenlabs_key,
+                "Content-Type": "application/json",
+            },
+            json={
+                "text": clean_text,
+                "model_id": "eleven_multilingual_v2",
+                "voice_settings": {
+                    "stability": 0.5,
+                    "similarity_boost": 0.8,
+                    "style": 0.4,
+                    "use_speaker_boost": True
+                }
+            }
+        )
+
+    if resp.status_code != 200:
+        return Response(status_code=422, content="Voice generation failed")
+
+    return Response(
+        content=resp.content,
+        media_type="audio/mpeg",
+        headers={"Cache-Control": "no-cache"}
+    )
 
 
 @app.get("/api/health")

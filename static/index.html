@@ -527,6 +527,26 @@ body {
   padding: 0;
 }
 .mic-btn:hover { border-color: var(--gold); }
+
+/* LISTEN BUTTON */
+.listen-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  background: var(--white);
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.listen-btn:hover { border-color: var(--gold); color: var(--gold-dark); }
+.listen-btn.playing { border-color: var(--gold); color: var(--gold-dark); background: var(--gold-dim); }
+.listen-btn:disabled { opacity: 0.5; cursor: wait; }
 .mic-btn.recording {
   background: #C62828;
   border-color: #C62828;
@@ -907,9 +927,11 @@ function addMessageToUI(type, content, isAnalysis) {
     .replace(/\n- /g, '\n• ')
     .replace(/\n/g, '<br>');
 
+  const listenHtml = (type === 'agent' || isAnalysis) ? `<button class="listen-btn" onclick="listenToMessage(this)">\u{1F50A} Listen</button>` : '';
   msgDiv.innerHTML = `
     <div class="message-label">${label}</div>
     <div class="message-bubble">${formatted}</div>
+    ${listenHtml}
   `;
   messagesEl.appendChild(msgDiv);
   messagesEl.scrollTop = messagesEl.scrollHeight;
@@ -947,6 +969,68 @@ function autoResizeTextarea() {
   ta.style.height = Math.min(ta.scrollHeight, 120) + 'px';
 }
 document.getElementById('chatInput')?.addEventListener('input', autoResizeTextarea);
+
+// ===== TEXT-TO-SPEECH (Teresa's voice) =====
+let currentAudio = null;
+
+async function listenToMessage(btn) {
+  // Get the text from the sibling message bubble
+  const bubble = btn.parentElement.querySelector('.message-bubble');
+  if (!bubble) return;
+  
+  // If already playing, stop
+  if (currentAudio && !currentAudio.paused) {
+    currentAudio.pause();
+    currentAudio = null;
+    document.querySelectorAll('.listen-btn').forEach(b => {
+      b.classList.remove('playing');
+      b.textContent = '\u{1F50A} Listen';
+    });
+    return;
+  }
+  
+  // Get plain text from bubble
+  const text = bubble.innerText || bubble.textContent;
+  if (!text.trim()) return;
+  
+  btn.disabled = true;
+  btn.textContent = '\u{23F3} Loading...';
+  
+  try {
+    const resp = await fetch(`${API}/api/speak`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: text.trim() })
+    });
+    
+    if (!resp.ok) {
+      btn.textContent = '\u{1F50A} Listen';
+      btn.disabled = false;
+      return;
+    }
+    
+    const blob = await resp.blob();
+    const url = URL.createObjectURL(blob);
+    currentAudio = new Audio(url);
+    
+    btn.disabled = false;
+    btn.classList.add('playing');
+    btn.textContent = '\u{23F8} Playing...';
+    
+    currentAudio.onended = () => {
+      btn.classList.remove('playing');
+      btn.textContent = '\u{1F50A} Listen';
+      URL.revokeObjectURL(url);
+      currentAudio = null;
+    };
+    
+    currentAudio.play();
+  } catch(e) {
+    console.error('TTS error:', e);
+    btn.textContent = '\u{1F50A} Listen';
+    btn.disabled = false;
+  }
+}
 
 // ===== SPEECH RECOGNITION =====
 let recognition = null;
