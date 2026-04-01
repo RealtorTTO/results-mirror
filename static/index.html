@@ -638,14 +638,22 @@ body {
       <div class="tagline">RESULTS MIRROR</div>
       <p class="subtitle">This tool is exclusively for Realty ONE Group Results agents.</p>
     </div>
-    <div style="max-width:320px;margin:0 auto;text-align:center;">
+    <div style="max-width:360px;margin:0 auto;text-align:center;">
       <div class="form-group">
-        <label>Enter Password</label>
+        <label>Your First Name</label>
+        <input type="text" id="loginName" placeholder="e.g. Sarah" autocomplete="given-name" style="text-align:center;">
+      </div>
+      <div class="form-group">
+        <label>Your Email</label>
+        <input type="email" id="loginEmail" placeholder="you@email.com" autocomplete="email" style="text-align:center;">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
         <input type="password" id="passwordInput" placeholder="Password" onkeydown="if(event.key==='Enter')checkPassword()" style="text-align:center;">
       </div>
-      <div id="passwordError" style="color:#C62828;font-size:13px;margin-bottom:12px;display:none;">Incorrect password. Please try again.</div>
-      <button class="btn-primary" onclick="checkPassword()">ENTER</button>
-      <p style="font-size:12px;color:var(--text-muted);margin-top:16px;line-height:1.5;">Don't have the password? Ask your broker or check your Results Reset email.</p>
+      <div id="passwordError" style="color:#C62828;font-size:13px;margin-bottom:12px;display:none;"></div>
+      <button class="btn-primary" id="loginBtn" onclick="checkPassword()">ENTER</button>
+      <p style="font-size:12px;color:var(--text-muted);margin-top:16px;line-height:1.5;">Don't have access? Ask your broker or sign up for Results Reset coaching.</p>
     </div>
   </div>
 
@@ -654,11 +662,6 @@ body {
     <div class="landing-hero">
       <div class="tagline">IT'S NOT WHAT YOU'RE <em>SAYING.</em><br>IT'S WHAT THEY'RE <em>HEARING.</em></div>
       <p class="subtitle">AI-powered communication coaching that shows you the gap between your intent and their perception — and teaches you how to close it.</p>
-    </div>
-
-    <div class="name-input-section">
-      <label>Your First Name</label>
-      <input type="text" id="agentNameInput" placeholder="e.g. Sarah" autocomplete="given-name">
     </div>
 
     <div class="coaching-style-section">
@@ -819,22 +822,80 @@ function selectStyle(btn) {
   coachingStyle = btn.dataset.value;
 }
 
-// ===== PASSWORD GATE =====
-function checkPassword() {
-  const input = document.getElementById('passwordInput');
+// ===== LOGIN =====
+let agentEmail = '';
+let currentSessionId = null;
+
+async function checkPassword() {
+  const nameInput = document.getElementById('loginName');
+  const emailInput = document.getElementById('loginEmail');
+  const passInput = document.getElementById('passwordInput');
   const error = document.getElementById('passwordError');
-  if (input.value === 'MirrorMe2Results$') {
-    error.style.display = 'none';
-    showScreen('screenLanding');
-    sessionStorage.setItem('rm_auth', '1');
-  } else {
+  const btn = document.getElementById('loginBtn');
+  
+  const name = nameInput.value.trim();
+  const email = emailInput.value.trim().toLowerCase();
+  const pass = passInput.value;
+  
+  if (!name) { nameInput.focus(); return; }
+  if (!email) { emailInput.focus(); return; }
+  
+  // Check password first
+  if (pass !== 'MirrorMe2Results$') {
+    error.textContent = 'Incorrect password. Please try again.';
     error.style.display = 'block';
-    input.value = '';
-    input.focus();
+    passInput.value = '';
+    passInput.focus();
+    return;
   }
+  
+  // Check email against approved list
+  btn.disabled = true;
+  btn.textContent = 'CHECKING...';
+  error.style.display = 'none';
+  
+  try {
+    const resp = await fetch(`${API}/api/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, firstName: name })
+    });
+    const data = await resp.json();
+    
+    if (!data.ok) {
+      error.textContent = data.error || 'Email not approved.';
+      error.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'ENTER';
+      return;
+    }
+    
+    // Success — store login
+    agentName = name;
+    agentEmail = email;
+    sessionStorage.setItem('rm_auth', '1');
+    sessionStorage.setItem('rm_name', name);
+    sessionStorage.setItem('rm_email', email);
+    
+    // Show welcome back message if returning user
+    if (data.sessionCount > 0) {
+      console.log(`Welcome back! ${data.sessionCount} previous sessions.`);
+    }
+    
+    showScreen('screenLanding');
+  } catch(e) {
+    error.textContent = 'Connection error. Please try again.';
+    error.style.display = 'block';
+  }
+  
+  btn.disabled = false;
+  btn.textContent = 'ENTER';
 }
-// Auto-pass if already authenticated this session
+
+// Auto-restore session
 if (sessionStorage.getItem('rm_auth') === '1') {
+  agentName = sessionStorage.getItem('rm_name') || '';
+  agentEmail = sessionStorage.getItem('rm_email') || '';
   document.getElementById('screenPassword').classList.remove('active');
   document.getElementById('screenLanding').classList.add('active');
 }
@@ -847,13 +908,7 @@ function showScreen(id) {
 }
 
 function openDoor(door) {
-  agentName = document.getElementById('agentNameInput').value.trim();
-  if (!agentName) {
-    document.getElementById('agentNameInput').focus();
-    document.getElementById('agentNameInput').style.borderColor = '#C62828';
-    setTimeout(() => document.getElementById('agentNameInput').style.borderColor = '', 1500);
-    return;
-  }
+  if (!agentName) { agentName = sessionStorage.getItem('rm_name') || 'Friend'; }
   currentDoor = door;
   currentMessages = [];
 
@@ -884,6 +939,9 @@ function openDoor(door) {
     showScreen('screenChat');
     document.getElementById('chatMessages').innerHTML = '';
 
+    // Start session tracking
+    startSessionTracking(door);
+
     // Add intro blurb as a system note
     addIntroBlurb(introBlurb);
 
@@ -894,9 +952,44 @@ function openDoor(door) {
   }
 }
 
+async function startSessionTracking(door, profile) {
+  if (!agentEmail) return;
+  try {
+    const resp = await fetch(`${API}/api/session/start`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: agentEmail,
+        door: door,
+        coachingStyle: coachingStyle,
+        clientProfile: profile || null
+      })
+    });
+    const data = await resp.json();
+    currentSessionId = data.sessionId;
+  } catch(e) { console.log('Session tracking error:', e); }
+}
+
+async function saveSession() {
+  if (!currentSessionId || !agentEmail || currentMessages.length < 2) return;
+  try {
+    await fetch(`${API}/api/session/save`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sessionId: currentSessionId,
+        messages: currentMessages
+      })
+    });
+  } catch(e) { console.log('Session save error:', e); }
+}
+
 function exitChat() {
+  // Save session before leaving
+  saveSession();
   currentMessages = [];
   currentDoor = '';
+  currentSessionId = null;
   showScreen('screenLanding');
 }
 
@@ -928,6 +1021,9 @@ function startMirror() {
   document.getElementById('chatContext').textContent = contextStr;
   showScreen('screenChat');
   document.getElementById('chatMessages').innerHTML = '';
+
+  // Start session tracking
+  startSessionTracking('mirror', clientProfile);
 
   // Add intro blurb
   addIntroBlurb("I'm going to play the role of your client based on the personality and emotions you selected. Respond to me the way you naturally would in this situation — don't overthink it. After a few exchanges, I'll hold up the mirror and show you what your client actually experienced. Be yourself. That's the whole point.");
@@ -1201,6 +1297,7 @@ async function streamResponse() {
         messages: currentMessages,
         clientProfile: clientProfile,
         agentName: agentName,
+        agentEmail: agentEmail,
         coachingStyle: coachingStyle
       })
     });

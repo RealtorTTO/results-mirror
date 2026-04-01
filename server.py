@@ -14,6 +14,13 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, StreamingResponse, Response
 from anthropic import Anthropic
 
+from database import (
+    is_email_approved, add_approved_email, add_approved_emails_bulk,
+    list_approved_emails, remove_approved_email,
+    get_or_create_agent, get_agent, get_agent_progress_summary,
+    create_session, update_session, get_agent_sessions
+)
+
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
@@ -302,8 +309,16 @@ async def chat(request: Request):
     messages = body.get("messages", [])
     client_profile = body.get("clientProfile", {})
     agent_name = body.get("agentName", "")
+    agent_email = body.get("agentEmail", "")
     coaching_style = body.get("coachingStyle", "straight")
     visitor_id = request.headers.get("X-Visitor-Id", str(uuid.uuid4()))
+    
+    # Get progress history if agent is logged in
+    progress_context = ""
+    if agent_email:
+        progress_context = get_agent_progress_summary(agent_email)
+        if progress_context:
+            progress_context = f"\n\n## THIS AGENT'S HISTORY (Reference naturally when relevant):\n{progress_context}"
 
     # Coaching intensity modifier
     style_modifier = ""
@@ -336,13 +351,13 @@ Warm but direct. Boot camp with a hug. Lead with acknowledgment, then deliver th
             system += f"- Background: {client_profile.get('background', 'Not specified')}\n"
             system += f"\nThe agent's name is {agent_name}. Stay in character as this client. Remember their personality affects how they communicate — a High D is terse and impatient, a High S is warm and hesitant, a High C asks lots of detail questions, a High I is chatty and enthusiastic."
     elif door == "diagnostic":
-        system = DIAGNOSTIC_SYSTEM + style_modifier + f"\n\nThe agent's name is {agent_name}. Use their first name naturally in conversation. Do NOT ask for their name — you already know it."
+        system = DIAGNOSTIC_SYSTEM + style_modifier + progress_context + f"\n\nThe agent's name is {agent_name}. Use their first name naturally in conversation. Do NOT ask for their name — you already know it."
     elif door == "coaching":
-        system = COACHING_SYSTEM + style_modifier + f"\n\nThe agent's name is {agent_name}. Use their first name naturally in conversation. Do NOT ask for their name — you already know it."
+        system = COACHING_SYSTEM + style_modifier + progress_context + f"\n\nThe agent's name is {agent_name}. Use their first name naturally in conversation. Do NOT ask for their name — you already know it."
     elif door == "postmortem":
-        system = POSTMORTEM_SYSTEM + style_modifier + f"\n\nThe agent's name is {agent_name}. Use their first name naturally in conversation. Do NOT ask for their name — you already know it."
+        system = POSTMORTEM_SYSTEM + style_modifier + progress_context + f"\n\nThe agent's name is {agent_name}. Use their first name naturally in conversation. Do NOT ask for their name — you already know it."
     else:
-        system = TERESA_SYSTEM_PROMPT + style_modifier
+        system = TERESA_SYSTEM_PROMPT + style_modifier + progress_context
 
     # Stream the response
     async def generate():
@@ -357,6 +372,134 @@ Warm but direct. Boot camp with a hug. Lead with acknowledgment, then deliver th
         yield f"data: {json.dumps({'done': True})}\n\n"
 
     return StreamingResponse(generate(), media_type="text/event-stream")
+
+
+# ===== AUTH & AGENT ENDPOINTS =====
+
+@app.post("/api/login")
+async def login(request: Request):
+    """Check if email is approved and create/return agent profile."""
+    body = await request.json()
+    email = body.get("email", "").strip().lower()
+    first_name = body.get("firstName", "").strip()
+    
+    if not email:
+        return {"ok": False, "error": "Please enter your email."}
+    
+    if not is_email_approved(email):
+        return {"ok": False, "error": "This email is not on the approved list. Please check with your broker or sign up for Results Reset."}
+    
+    agent = get_or_create_agent(email, first_name)
+    progress = get_agent_progress_summary(email)
+    sessions = get_agent_sessions(email, limit=5)
+    
+    return {
+        "ok": True,
+        "agent": agent,
+        "sessionCount": agent.get("total_sessions", 0),
+        "recentSessions": sessions,
+        "progressSummary": progress
+    }
+
+
+@app.post("/api/session/start")
+async def start_session(request: Request):
+    """Create a new coaching session."""
+    body = await request.json()
+    email = body.get("email", "")
+    door = body.get("door", "mirror")
+    coaching_style = body.get("coachingStyle", "straight")
+    client_profile = body.get("clientProfile", None)
+    
+    session_id = create_session(email, door, coaching_style, client_profile)
+    return {"sessionId": session_id}
+
+
+@app.post("/api/session/save")
+async def save_session(request: Request):
+    """Save session summary and messages at end of conversation."""
+    body = await request.json()
+    session_id = body.get("sessionId")
+    messages = body.get("messages", [])
+    
+    if not session_id:
+        return {"ok": False}
+    
+    # Use AI to generate a brief session summary for progress tracking
+    summary_messages = [{
+        "role": "user",
+        "content": f"""Analyze this coaching session and provide a BRIEF summary in this exact JSON format (no markdown, just raw JSON):
+{{
+  "summary": "One sentence summary of what was discussed",
+  "patterns": "Key communication patterns identified (or null)",
+  "strengths": "What the agent did well (or null)",
+  "growth": "Primary area for growth (or null)"
+}}
+
+Session messages:
+{json.dumps(messages[-10:], indent=2)}"""
+    }]
+    
+    try:
+        response = client.messages.create(
+            model=MODEL,
+            max_tokens=300,
+            system="You are a coaching session analyzer. Return ONLY valid JSON, no markdown formatting.",
+            messages=summary_messages
+        )
+        summary_text = response.content[0].text.strip()
+        # Try to parse JSON
+        if summary_text.startswith("```"):
+            summary_text = summary_text.split("```")[1].strip()
+            if summary_text.startswith("json"):
+                summary_text = summary_text[4:].strip()
+        summary_data = json.loads(summary_text)
+    except Exception:
+        summary_data = {"summary": "Session completed", "patterns": None, "strengths": None, "growth": None}
+    
+    update_session(
+        session_id,
+        summary=summary_data.get("summary"),
+        patterns=summary_data.get("patterns"),
+        strengths=summary_data.get("strengths"),
+        growth_areas=summary_data.get("growth"),
+        messages=messages
+    )
+    
+    return {"ok": True, "summary": summary_data}
+
+
+# ===== ADMIN ENDPOINTS =====
+
+ADMIN_KEY = os.environ.get("ADMIN_KEY", "TeresaAdmin2026$")
+
+@app.post("/api/admin/emails")
+async def admin_add_emails(request: Request):
+    """Add approved emails. Requires admin key."""
+    body = await request.json()
+    if body.get("adminKey") != ADMIN_KEY:
+        return {"ok": False, "error": "Unauthorized"}
+    
+    emails = body.get("emails", [])
+    # emails can be [{"email": "...", "name": "..."}, ...] or just ["email1", "email2"]
+    parsed = []
+    for e in emails:
+        if isinstance(e, dict):
+            parsed.append((e.get("email", ""), e.get("name", "")))
+        else:
+            parsed.append((e, ""))
+    
+    add_approved_emails_bulk(parsed)
+    return {"ok": True, "added": len(parsed)}
+
+
+@app.get("/api/admin/emails")
+async def admin_list_emails(request: Request):
+    """List all approved emails. Requires admin key as query param."""
+    key = request.query_params.get("key", "")
+    if key != ADMIN_KEY:
+        return {"ok": False, "error": "Unauthorized"}
+    return {"ok": True, "emails": list_approved_emails()}
 
 
 @app.post("/api/speak")
