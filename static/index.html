@@ -516,8 +516,8 @@ body {
   height: 44px;
   min-width: 44px;
   border-radius: 50%;
-  border: 1.5px solid var(--border);
-  background: var(--white);
+  border: 2px solid var(--gold);
+  background: var(--gold-light);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -525,8 +525,11 @@ body {
   transition: all var(--transition);
   font-size: 18px;
   padding: 0;
+  color: var(--gold-dark);
 }
-.mic-btn:hover { border-color: var(--gold); }
+.mic-btn svg { stroke: var(--gold-dark); }
+.mic-btn:hover { background: var(--gold); }
+.mic-btn:hover svg { stroke: var(--white); }
 
 /* LISTEN BUTTON */
 .listen-btn {
